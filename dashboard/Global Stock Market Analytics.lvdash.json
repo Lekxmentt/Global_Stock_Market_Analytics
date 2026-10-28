@@ -1,0 +1,1740 @@
+{
+  "datasets": [
+    {
+      "name": "ds_yearly_perf",
+      "displayName": "Yearly Performance (Rebased)",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT\n  Index,\n  Country,\n  Year,\n  MAKE_DATE(Year, 12, 31) AS Year_End_Date,\n  Ending_Close AS Year_End_Close,\n  Starting_Close AS Previous_Year_End_Close,\n  Annual_Return_Percentage,\n  Ending_Close / FIRST_VALUE(Ending_Close) OVER (PARTITION BY Index ORDER BY Year) * 100 AS Rebased_Close,\n  CASE\n    WHEN Country = 'United States' THEN 'North America'\n    WHEN Country IN ('Japan', 'China', 'India', 'Indonesia') THEN 'Asia'\n    WHEN Country IN ('United Kingdom', 'Germany', 'Turkey') THEN 'Europe'\n    WHEN Country = 'Brazil' THEN 'Latin America'\n    WHEN Country = 'Saudi Arabia' THEN 'Middle East'\n  END AS Region\nFROM global_stock_market.gold.annual_returns",
+        "dimensions": [
+          {
+            "name": "Index",
+            "expr": "Index",
+            "displayName": "Index"
+          },
+          {
+            "name": "Country",
+            "expr": "Country",
+            "displayName": "Country"
+          },
+          {
+            "name": "Region",
+            "expr": "Region",
+            "displayName": "Region"
+          },
+          {
+            "name": "Year",
+            "expr": "Year",
+            "displayName": "Year"
+          },
+          {
+            "name": "Year_End_Date",
+            "expr": "Year_End_Date",
+            "displayName": "Year End Date"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Year_End_Close",
+            "expr": "MAX(Year_End_Close)",
+            "displayName": "Year End Close"
+          },
+          {
+            "name": "Annual_Return_Percentage",
+            "expr": "MAX(Annual_Return_Percentage)",
+            "displayName": "Annual Return %",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "Rebased_Close",
+            "expr": "MAX(Rebased_Close)",
+            "displayName": "Rebased Close (100 = First Year)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "Latest_Year",
+            "expr": "MAX(Year)",
+            "displayName": "Latest Year"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ds_ytd_returns",
+      "displayName": "YTD Returns",
+      "config": {
+        "version": "1.1",
+        "source": "global_stock_market.gold.ytd_returns",
+        "dimensions": [
+          {
+            "name": "Index",
+            "expr": "Index",
+            "displayName": "Index"
+          },
+          {
+            "name": "Country",
+            "expr": "Country",
+            "displayName": "Country"
+          },
+          {
+            "name": "Region",
+            "expr": "CASE\n  WHEN Country = 'United States' THEN 'North America'\n  WHEN Country IN ('Japan', 'China', 'India', 'Indonesia') THEN 'Asia'\n  WHEN Country IN ('United Kingdom', 'Germany', 'Turkey') THEN 'Europe'\n  WHEN Country = 'Brazil' THEN 'Latin America'\n  WHEN Country = 'Saudi Arabia' THEN 'Middle East'\nEND",
+            "displayName": "Region"
+          }
+        ],
+        "measures": [
+          {
+            "name": "YTD_Return_Percentage",
+            "expr": "MAX(YTD_Return_Percentage)",
+            "displayName": "YTD Return %",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "Index_Count",
+            "expr": "COUNT(DISTINCT Index)",
+            "displayName": "Index Count"
+          },
+          {
+            "name": "Country_Count",
+            "expr": "COUNT(DISTINCT Country)",
+            "displayName": "Country Count"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ds_volatility",
+      "displayName": "Daily Volatility Stats",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT\n  Index,\n  Country,\n  Number_Of_Trading_Days,\n  Start_Date,\n  End_Date,\n  Average_Daily_Return,\n  Daily_volatility,\n  Daily_Volatility_Category,\n  CASE\n    WHEN Country = 'United States' THEN 'North America'\n    WHEN Country IN ('Japan', 'China', 'India', 'Indonesia') THEN 'Asia'\n    WHEN Country IN ('United Kingdom', 'Germany', 'Turkey') THEN 'Europe'\n    WHEN Country = 'Brazil' THEN 'Latin America'\n    WHEN Country = 'Saudi Arabia' THEN 'Middle East'\n  END AS Region\nFROM global_stock_market.gold.daily_volatility_stats",
+        "dimensions": [
+          {
+            "name": "Index",
+            "expr": "Index",
+            "displayName": "Index"
+          },
+          {
+            "name": "Country",
+            "expr": "Country",
+            "displayName": "Country"
+          },
+          {
+            "name": "Region",
+            "expr": "Region",
+            "displayName": "Region"
+          },
+          {
+            "name": "Daily_Volatility_Category",
+            "expr": "Daily_Volatility_Category",
+            "displayName": "Volatility Category"
+          },
+          {
+            "name": "Start_Date",
+            "expr": "Start_Date",
+            "displayName": "Start Date"
+          },
+          {
+            "name": "End_Date",
+            "expr": "End_Date",
+            "displayName": "End Date"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Daily_volatility",
+            "expr": "MAX(Daily_volatility)",
+            "displayName": "Daily Volatility",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 4.0
+              }
+            }
+          },
+          {
+            "name": "Annualized_Volatility",
+            "expr": "MAX(Daily_volatility) * SQRT(252)",
+            "displayName": "Annualized Volatility",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "Average_Daily_Return",
+            "expr": "MAX(Average_Daily_Return)",
+            "displayName": "Avg Daily Return",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 6.0
+              }
+            }
+          },
+          {
+            "name": "Number_Of_Trading_Days",
+            "expr": "MAX(Number_Of_Trading_Days)",
+            "displayName": "Trading Days"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ds_monthly_trends",
+      "displayName": "Monthly Trends & Volatility",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT\n  Index,\n  Country,\n  Year,\n  Month_Number,\n  Month_End_Date,\n  First_Close,\n  Month_End_Close,\n  Previous_Month_End_Close,\n  Monthly_Return_Percentage,\n  CASE\n    WHEN Country = 'United States' THEN 'North America'\n    WHEN Country IN ('Japan', 'China', 'India', 'Indonesia') THEN 'Asia'\n    WHEN Country IN ('United Kingdom', 'Germany', 'Turkey') THEN 'Europe'\n    WHEN Country = 'Brazil' THEN 'Latin America'\n    WHEN Country = 'Saudi Arabia' THEN 'Middle East'\n  END AS Region\nFROM global_stock_market.gold.monthly_index_trends",
+        "dimensions": [
+          {
+            "name": "Index",
+            "expr": "Index",
+            "displayName": "Index"
+          },
+          {
+            "name": "Country",
+            "expr": "Country",
+            "displayName": "Country"
+          },
+          {
+            "name": "Region",
+            "expr": "Region",
+            "displayName": "Region"
+          },
+          {
+            "name": "Year",
+            "expr": "Year",
+            "displayName": "Year"
+          },
+          {
+            "name": "Month_Number",
+            "expr": "Month_Number",
+            "displayName": "Month Number"
+          },
+          {
+            "name": "Month_End_Date",
+            "expr": "Month_End_Date",
+            "displayName": "Month End Date"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Monthly_Return_Percentage",
+            "expr": "AVG(Monthly_Return_Percentage)",
+            "displayName": "Monthly Return %",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "Yearly_Volatility",
+            "expr": "STDDEV(Monthly_Return_Percentage) * SQRT(12)",
+            "displayName": "Annualized Volatility (from monthly)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ds_risk_return",
+      "displayName": "Risk vs Return",
+      "config": {
+        "version": "1.1",
+        "source": "WITH vol AS (\n  SELECT\n    v.Index,\n    v.Country,\n    v.Daily_volatility * SQRT(252) AS Annualized_Volatility,\n    CASE\n      WHEN v.Country = 'United States' THEN 'North America'\n      WHEN v.Country IN ('Japan', 'China', 'India', 'Indonesia') THEN 'Asia'\n      WHEN v.Country IN ('United Kingdom', 'Germany', 'Turkey') THEN 'Europe'\n      WHEN v.Country = 'Brazil' THEN 'Latin America'\n      WHEN v.Country = 'Saudi Arabia' THEN 'Middle East'\n    END AS Region\n  FROM global_stock_market.gold.daily_volatility_stats v\n),\navg_ret AS (\n  SELECT\n    Index,\n    AVG(Annual_Return_Percentage) AS Avg_Annual_Return\n  FROM global_stock_market.gold.annual_returns\n  GROUP BY Index\n),\ncombined AS (\n  SELECT\n    v.Index,\n    v.Country,\n    v.Region,\n    v.Annualized_Volatility,\n    COALESCE(a.Avg_Annual_Return, 0) AS Avg_Annual_Return\n  FROM vol v\n  LEFT JOIN avg_ret a ON v.Index = a.Index\n)\nSELECT\n  Index,\n  Country,\n  Region,\n  'Annualized Volatility' AS Metric,\n  Annualized_Volatility AS Metric_Value\nFROM combined\nUNION ALL\nSELECT\n  Index,\n  Country,\n  Region,\n  'Avg Annual Return' AS Metric,\n  Avg_Annual_Return AS Metric_Value\nFROM combined",
+        "dimensions": [
+          {
+            "name": "Index",
+            "expr": "Index",
+            "displayName": "Index"
+          },
+          {
+            "name": "Country",
+            "expr": "Country",
+            "displayName": "Country"
+          },
+          {
+            "name": "Region",
+            "expr": "Region",
+            "displayName": "Region"
+          },
+          {
+            "name": "Metric",
+            "expr": "Metric",
+            "displayName": "Metric"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Metric_Value",
+            "expr": "MAX(Metric_Value)",
+            "displayName": "Value",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ds_cagr",
+      "displayName": "CAGR Analysis",
+      "config": {
+        "version": "1.1",
+        "source": "WITH yearly AS (\n  SELECT\n    Index,\n    Country,\n    Year,\n    Year_End_Close,\n    CASE\n      WHEN Country = 'United States' THEN 'North America'\n      WHEN Country IN ('Japan', 'China', 'India', 'Indonesia') THEN 'Asia'\n      WHEN Country IN ('United Kingdom', 'Germany', 'Turkey') THEN 'Europe'\n      WHEN Country = 'Brazil' THEN 'Latin America'\n      WHEN Country = 'Saudi Arabia' THEN 'Middle East'\n    END AS Region\n  FROM global_stock_market.gold.yearly_index_trends\n),\nbounds AS (\n  SELECT\n    Index,\n    Country,\n    Region,\n    MIN(Year) AS First_Year,\n    MAX(Year) AS Last_Year,\n    COUNT(*) AS Num_Years\n  FROM yearly\n  GROUP BY Index, Country, Region\n),\nfull_cagr AS (\n  SELECT\n    b.Index,\n    b.Country,\n    b.Region,\n    b.First_Year,\n    b.Last_Year,\n    b.Num_Years,\n    yf.Year_End_Close AS First_Close,\n    yl.Year_End_Close AS Last_Close,\n    (POWER(yl.Year_End_Close / yf.Year_End_Close, 1.0 / (b.Num_Years - 1)) - 1) * 100 AS Full_Period_CAGR,\n    (yl.Year_End_Close / yf.Year_End_Close - 1) * 100 AS Cumulative_Price_Return\n  FROM bounds b\n  JOIN yearly yf ON yf.Index = b.Index AND yf.Year = b.First_Year\n  JOIN yearly yl ON yl.Index = b.Index AND yl.Year = b.Last_Year\n),\nten_year AS (\n  SELECT\n    b.Index,\n    (POWER(yl.Year_End_Close / ys.Year_End_Close, 1.0 / 10) - 1) * 100 AS Ten_Year_CAGR\n  FROM bounds b\n  JOIN yearly yl ON yl.Index = b.Index AND yl.Year = b.Last_Year\n  JOIN yearly ys ON ys.Index = b.Index AND ys.Year = b.Last_Year - 10\n)\nSELECT\n  f.Index,\n  f.Country,\n  f.Region,\n  f.First_Year,\n  f.Last_Year,\n  f.Num_Years,\n  f.First_Close,\n  f.Last_Close,\n  f.Full_Period_CAGR,\n  f.Cumulative_Price_Return,\n  t.Ten_Year_CAGR\nFROM full_cagr f\nLEFT JOIN ten_year t ON t.Index = f.Index",
+        "dimensions": [
+          {
+            "name": "Index",
+            "expr": "Index",
+            "displayName": "Index"
+          },
+          {
+            "name": "Country",
+            "expr": "Country",
+            "displayName": "Country"
+          },
+          {
+            "name": "Region",
+            "expr": "Region",
+            "displayName": "Region"
+          },
+          {
+            "name": "First_Year",
+            "expr": "First_Year",
+            "displayName": "First Year"
+          },
+          {
+            "name": "Last_Year",
+            "expr": "Last_Year",
+            "displayName": "Last Year"
+          },
+          {
+            "name": "Num_Years",
+            "expr": "Num_Years",
+            "displayName": "Years of Data"
+          }
+        ],
+        "measures": [
+          {
+            "name": "Full_Period_CAGR",
+            "expr": "MAX(Full_Period_CAGR)",
+            "displayName": "Full-Period CAGR %",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "Ten_Year_CAGR",
+            "expr": "MAX(Ten_Year_CAGR)",
+            "displayName": "10-Year CAGR %",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "Cumulative_Price_Return",
+            "expr": "MAX(Cumulative_Price_Return)",
+            "displayName": "Cumulative Price Return %",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "First_Close",
+            "expr": "MAX(First_Close)",
+            "displayName": "First Close"
+          },
+          {
+            "name": "Last_Close",
+            "expr": "MAX(Last_Close)",
+            "displayName": "Last Close"
+          }
+        ]
+      }
+    }
+  ],
+  "pages": [
+    {
+      "name": "e4deb5ad",
+      "displayName": "Market Overview",
+      "layout": [
+        {
+          "widget": {
+            "name": "kpi_indices",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_ytd_returns",
+                  "fields": [
+                    {
+                      "name": "measure(Index_Count)",
+                      "expression": "MEASURE(`Index_Count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Indices Tracked"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Index_Count)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_countries",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_ytd_returns",
+                  "fields": [
+                    {
+                      "name": "measure(Country_Count)",
+                      "expression": "MEASURE(`Country_Count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Countries Covered"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Country_Count)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_latest_year",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_yearly_perf",
+                  "fields": [
+                    {
+                      "name": "measure(Latest_Year)",
+                      "expression": "MEASURE(`Latest_Year`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Latest Data Year"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(Latest_Year)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi_best_ytd",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_ytd_returns",
+                  "fields": [
+                    {
+                      "name": "measure(YTD_Return_Percentage)",
+                      "expression": "MEASURE(`YTD_Return_Percentage`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Best YTD Return %"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(YTD_Return_Percentage)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 0,
+            "width": 3,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_rebased_perf",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_yearly_perf",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "Year",
+                      "expression": "`Year`"
+                    },
+                    {
+                      "name": "measure(Rebased_Close)",
+                      "expression": "MEASURE(`Rebased_Close`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Index Performance Comparison (Rebased to 100 at First Year)"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "Year",
+                  "displayName": "Year",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Rebased_Close)",
+                  "displayName": "Rebased_Close",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "Index",
+                  "displayName": "Index",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 8,
+            "height": 8
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_ytd_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_ytd_returns",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "measure(YTD_Return_Percentage)",
+                      "expression": "MEASURE(`YTD_Return_Percentage`)"
+                    }
+                  ],
+                  "disaggregated": false,
+                  "orders": [
+                    {
+                      "direction": "DESC",
+                      "expression": "MEASURE(`YTD_Return_Percentage`)"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": {
+                  "value": "YTD Price Returns by Index",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "Index",
+                  "displayName": "Index",
+                  "scale": {
+                    "type": "categorical",
+                    "sort": {
+                      "by": "measure-reversed",
+                      "measure": {
+                        "fieldName": "measure(YTD_Return_Percentage)"
+                      }
+                    }
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(YTD_Return_Percentage)",
+                  "displayName": "YTD_Return_Percentage",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "Index",
+                  "displayName": "Index",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 2,
+            "width": 4,
+            "height": 8
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "performance_analysis",
+      "displayName": "Performance Analysis",
+      "layout": [
+        {
+          "widget": {
+            "name": "chart_cagr_bar",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_cagr",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "measure(Ten_Year_CAGR)",
+                      "expression": "MEASURE(`Ten_Year_CAGR`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "10-Year CAGR by Index"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "Index",
+                  "displayName": "Index",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Ten_Year_CAGR)",
+                  "displayName": "Ten_Year_CAGR",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "Index",
+                  "displayName": "Index",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_monthly_trends",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_monthly_trends",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "monthly(Month_End_Date)",
+                      "expression": "DATE_TRUNC(\"MONTH\", `Month_End_Date`)"
+                    },
+                    {
+                      "name": "measure(Monthly_Return_Percentage)",
+                      "expression": "MEASURE(`Monthly_Return_Percentage`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Monthly Performance Trends"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "monthly(Month_End_Date)",
+                  "displayName": "Month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Monthly_Return_Percentage)",
+                  "displayName": "Monthly_Return_Percentage",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "Index",
+                  "displayName": "Index",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_annual_returns",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_yearly_perf",
+                  "fields": [
+                    {
+                      "name": "Year",
+                      "expression": "`Year`"
+                    },
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "measure(Annual_Return_Percentage)",
+                      "expression": "MEASURE(`Annual_Return_Percentage`)"
+                    }
+                  ],
+                  "filters": [
+                    {
+                      "expression": "`Year` >= 2022"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Annual Returns by Index (2022–2026)"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "Index",
+                  "displayName": "Index",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Annual_Return_Percentage)",
+                  "displayName": "Annual Return %",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "Year",
+                  "displayName": "Year",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "table_perf_summary",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_cagr",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "Country",
+                      "expression": "`Country`"
+                    },
+                    {
+                      "name": "First_Year",
+                      "expression": "`First_Year`"
+                    },
+                    {
+                      "name": "Last_Year",
+                      "expression": "`Last_Year`"
+                    },
+                    {
+                      "name": "Num_Years",
+                      "expression": "`Num_Years`"
+                    },
+                    {
+                      "name": "measure(Cumulative_Price_Return)",
+                      "expression": "MEASURE(`Cumulative_Price_Return`)"
+                    },
+                    {
+                      "name": "measure(Full_Period_CAGR)",
+                      "expression": "MEASURE(`Full_Period_CAGR`)"
+                    },
+                    {
+                      "name": "measure(Ten_Year_CAGR)",
+                      "expression": "MEASURE(`Ten_Year_CAGR`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Performance Summary by Index"
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "Index"
+                  },
+                  {
+                    "fieldName": "Country"
+                  },
+                  {
+                    "fieldName": "First_Year"
+                  },
+                  {
+                    "fieldName": "Last_Year"
+                  },
+                  {
+                    "fieldName": "Num_Years"
+                  },
+                  {
+                    "fieldName": "measure(Cumulative_Price_Return)"
+                  },
+                  {
+                    "fieldName": "measure(Full_Period_CAGR)"
+                  },
+                  {
+                    "fieldName": "measure(Ten_Year_CAGR)"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 12,
+            "height": 5
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "risk_analysis",
+      "displayName": "Risk Analysis",
+      "layout": [
+        {
+          "widget": {
+            "name": "chart_yearly_vol_trends",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_monthly_trends",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "Year",
+                      "expression": "`Year`"
+                    },
+                    {
+                      "name": "measure(Yearly_Volatility)",
+                      "expression": "MEASURE(`Yearly_Volatility`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Yearly Volatility Trends (from Monthly Returns)"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "Year",
+                  "displayName": "Year",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Yearly_Volatility)",
+                  "displayName": "Yearly_Volatility",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "Index",
+                  "displayName": "Index",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "chart_risk_return",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "ds_risk_return",
+                  "fields": [
+                    {
+                      "name": "Metric",
+                      "expression": "`Metric`"
+                    },
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "measure(Metric_Value)",
+                      "expression": "MEASURE(`Metric_Value`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Risk vs Return: Volatility vs Annual Return"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "Index",
+                  "displayName": "Index",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(Metric_Value)",
+                  "displayName": "Metric_Value",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "Metric",
+                  "displayName": "Metric",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "global_filters",
+      "displayName": "Global Filters",
+      "layout": [
+        {
+          "widget": {
+            "name": "filter_country",
+            "queries": [
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2331218d7ae3cf588fab69a79_Country",
+                "query": {
+                  "datasetName": "ds_ytd_returns",
+                  "fields": [
+                    {
+                      "name": "Country",
+                      "expression": "`Country`"
+                    },
+                    {
+                      "name": "Country_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2327013d1b4bd7b1a024c239d_Country",
+                "query": {
+                  "datasetName": "ds_yearly_perf",
+                  "fields": [
+                    {
+                      "name": "Country",
+                      "expression": "`Country`"
+                    },
+                    {
+                      "name": "Country_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2353f1fecaa3ca3d7610f0713_Country",
+                "query": {
+                  "datasetName": "ds_monthly_trends",
+                  "fields": [
+                    {
+                      "name": "Country",
+                      "expression": "`Country`"
+                    },
+                    {
+                      "name": "Country_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c234f219f5a1b0cbde751a3f26_Country",
+                "query": {
+                  "datasetName": "ds_volatility",
+                  "fields": [
+                    {
+                      "name": "Country",
+                      "expression": "`Country`"
+                    },
+                    {
+                      "name": "Country_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23e1d1fb2855608fd964a879d_Country",
+                "query": {
+                  "datasetName": "ds_cagr",
+                  "fields": [
+                    {
+                      "name": "Country",
+                      "expression": "`Country`"
+                    },
+                    {
+                      "name": "Country_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23dda1d4692ad495d03a1f0af_Country",
+                "query": {
+                  "datasetName": "ds_risk_return",
+                  "fields": [
+                    {
+                      "name": "Country",
+                      "expression": "`Country`"
+                    },
+                    {
+                      "name": "Country_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Country"
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "Country",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2331218d7ae3cf588fab69a79_Country"
+                  },
+                  {
+                    "fieldName": "Country",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2327013d1b4bd7b1a024c239d_Country"
+                  },
+                  {
+                    "fieldName": "Country",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2353f1fecaa3ca3d7610f0713_Country"
+                  },
+                  {
+                    "fieldName": "Country",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c234f219f5a1b0cbde751a3f26_Country"
+                  },
+                  {
+                    "fieldName": "Country",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23e1d1fb2855608fd964a879d_Country"
+                  },
+                  {
+                    "fieldName": "Country",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23dda1d4692ad495d03a1f0af_Country"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_region",
+            "queries": [
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2331218d7ae3cf588fab69a79_Region",
+                "query": {
+                  "datasetName": "ds_ytd_returns",
+                  "fields": [
+                    {
+                      "name": "Region",
+                      "expression": "`Region`"
+                    },
+                    {
+                      "name": "Region_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2327013d1b4bd7b1a024c239d_Region",
+                "query": {
+                  "datasetName": "ds_yearly_perf",
+                  "fields": [
+                    {
+                      "name": "Region",
+                      "expression": "`Region`"
+                    },
+                    {
+                      "name": "Region_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2353f1fecaa3ca3d7610f0713_Region",
+                "query": {
+                  "datasetName": "ds_monthly_trends",
+                  "fields": [
+                    {
+                      "name": "Region",
+                      "expression": "`Region`"
+                    },
+                    {
+                      "name": "Region_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c234f219f5a1b0cbde751a3f26_Region",
+                "query": {
+                  "datasetName": "ds_volatility",
+                  "fields": [
+                    {
+                      "name": "Region",
+                      "expression": "`Region`"
+                    },
+                    {
+                      "name": "Region_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23e1d1fb2855608fd964a879d_Region",
+                "query": {
+                  "datasetName": "ds_cagr",
+                  "fields": [
+                    {
+                      "name": "Region",
+                      "expression": "`Region`"
+                    },
+                    {
+                      "name": "Region_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23dda1d4692ad495d03a1f0af_Region",
+                "query": {
+                  "datasetName": "ds_risk_return",
+                  "fields": [
+                    {
+                      "name": "Region",
+                      "expression": "`Region`"
+                    },
+                    {
+                      "name": "Region_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Region"
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "Region",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2331218d7ae3cf588fab69a79_Region"
+                  },
+                  {
+                    "fieldName": "Region",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2327013d1b4bd7b1a024c239d_Region"
+                  },
+                  {
+                    "fieldName": "Region",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2353f1fecaa3ca3d7610f0713_Region"
+                  },
+                  {
+                    "fieldName": "Region",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c234f219f5a1b0cbde751a3f26_Region"
+                  },
+                  {
+                    "fieldName": "Region",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23e1d1fb2855608fd964a879d_Region"
+                  },
+                  {
+                    "fieldName": "Region",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23dda1d4692ad495d03a1f0af_Region"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "filter_index",
+            "queries": [
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2331218d7ae3cf588fab69a79_Index",
+                "query": {
+                  "datasetName": "ds_ytd_returns",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "Index_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2327013d1b4bd7b1a024c239d_Index",
+                "query": {
+                  "datasetName": "ds_yearly_perf",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "Index_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2353f1fecaa3ca3d7610f0713_Index",
+                "query": {
+                  "datasetName": "ds_monthly_trends",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "Index_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c234f219f5a1b0cbde751a3f26_Index",
+                "query": {
+                  "datasetName": "ds_volatility",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "Index_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23e1d1fb2855608fd964a879d_Index",
+                "query": {
+                  "datasetName": "ds_cagr",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "Index_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              },
+              {
+                "name": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23dda1d4692ad495d03a1f0af_Index",
+                "query": {
+                  "datasetName": "ds_risk_return",
+                  "fields": [
+                    {
+                      "name": "Index",
+                      "expression": "`Index`"
+                    },
+                    {
+                      "name": "Index_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Index"
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "Index",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2331218d7ae3cf588fab69a79_Index"
+                  },
+                  {
+                    "fieldName": "Index",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2327013d1b4bd7b1a024c239d_Index"
+                  },
+                  {
+                    "fieldName": "Index",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c2353f1fecaa3ca3d7610f0713_Index"
+                  },
+                  {
+                    "fieldName": "Index",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c234f219f5a1b0cbde751a3f26_Index"
+                  },
+                  {
+                    "fieldName": "Index",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23e1d1fb2855608fd964a879d_Index"
+                  },
+                  {
+                    "fieldName": "Index",
+                    "queryName": "dashboards/01f1d2c102371f60a272246df7c039e7/datasets/01f1d2c23dda1d4692ad495d03a1f0af_Index"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 4,
+            "height": 2
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#EBEBEB",
+        "dark": "#1A1F24"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FCFCFD",
+        "dark": "#232A30"
+      },
+      "widgetBorderColor": {
+        "light": "#FCFCFD",
+        "dark": "#232A30"
+      },
+      "fontColor": {
+        "light": "#1A2127",
+        "dark": "#EEF0F2"
+      },
+      "selectionColor": {
+        "light": "#2272B4",
+        "dark": "#3D8FD9"
+      },
+      "visualizationColors": [
+        "#15AFDD",
+        "#2375A8",
+        "#52A870",
+        "#C85070",
+        "#C89930",
+        "#6B5B95",
+        "#88B04B",
+        "#9E6B55",
+        "#2E86AB",
+        "#A23B3B"
+      ],
+      "widgetHeaderAlignment": "LEFT",
+      "fontFamily": "Inter",
+      "widgetPadding": 12,
+      "widgetMargin": 8,
+      "widgetCornerRadius": 8,
+      "widgetShadow": 10,
+      "continuousGradient": {
+        "lightMode": {
+          "fromCategoricalIndex": 0
+        },
+        "darkMode": {
+          "fromCategoricalIndex": 0
+        }
+      },
+      "fontSettings": {
+        "base": {
+          "fontFamily": "Inter",
+          "fontColor": {
+            "light": "#08141A",
+            "dark": "#EBEBEB"
+          },
+          "fontSize": 12,
+          "fontWeight": 400
+        },
+        "widgetTitle": {
+          "fontSize": 14,
+          "fontWeight": 600
+        },
+        "widgetDescription": {
+          "fontSize": 12,
+          "fontWeight": 400
+        },
+        "fieldTitle": {
+          "textCase": "TEXT_CASE_UPPERCASE",
+          "fontColor": {
+            "light": "#31373D",
+            "dark": "#D6D8DA"
+          },
+          "fontSize": 11,
+          "fontWeight": 500
+        },
+        "fieldValue": {
+          "fontColor": {
+            "light": "#31373D",
+            "dark": "#D6D8DA"
+          },
+          "fontSize": 11,
+          "fontWeight": 400
+        }
+      },
+      "gridLineColor": {
+        "light": "#D6D6D6",
+        "dark": "#3A4046"
+      },
+      "axisLineColor": {
+        "light": "#B0B0B0",
+        "dark": "#555B61"
+      }
+    },
+    "applyModeEnabled": false
+  }
+}
