@@ -4,6 +4,8 @@
 
 An end-to-end financial data engineering and analytics project built with Databricks, PySpark, Delta Lake, and SQL to analyze global stock market indices, evaluate market performance, and compare historical volatility across countries.
 
+Dataset: [Global Stock Market Indices — Kaggle](https://www.kaggle.com/datasets/jacksaleeby/global-stock-market-indices-4-6m-rows)
+
 ### 🎯 Project Objectives
 
 - Process a large-scale dataset containing approximately 4.6 million stock market records.
