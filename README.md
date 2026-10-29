@@ -96,7 +96,7 @@ Analytical datasets and views support:
 | LakeFlow Jobs | ETL pipeline orchestration | 
 | Github | Version control and project documentation | 
 
-###🔮 Potential Future Enhancements
+### 🔮 Potential Future Enhancements
 
 - Add incremental ingestion using AutoLoader
 
