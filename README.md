@@ -1,4 +1,4 @@
-##🌍 Global Stock Market Analytics
+## 🌍 Global Stock Market Analytics
 
 ![](docs/dashboard_page_1.png)
 
